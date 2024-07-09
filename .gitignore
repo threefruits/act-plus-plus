@@ -150,3 +150,5 @@ core/env/
 core/point_cloud_images/
 core/output*
 check_point/
+scripts
+result*

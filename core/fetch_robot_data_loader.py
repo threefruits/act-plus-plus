@@ -4,19 +4,32 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 import glob
+from PIL import Image
+from torchvision import transforms
 
 
 class FetchRobotDataset(Dataset):
     cache = {}
     file_cache = {}
 
-    def __init__(self, demo_dir, k=None, traj_len=None, is_train=True):
+    def __init__(
+        self, 
+        demo_dir, 
+        k=None, 
+        traj_len=None, 
+        is_train=True,
+        augment_brightness=False,
+        brightness_factor=0.5,
+    ):
         super(FetchRobotDataset, self).__init__()
         self.demo_dir = demo_dir
         self.k = k
         self.traj_len = traj_len
         self.demo_files = glob.glob(f"{demo_dir}/episode_*")
         self.demo_files.sort()
+        self.is_train = is_train
+        self.augment_brightness = augment_brightness
+        self.brightness_factor = brightness_factor
         # self.get_norm_stats()
         line = int(len(self.demo_files) * 0.9)
         if is_train:
@@ -152,6 +165,17 @@ class FetchRobotDataset(Dataset):
 
         rgb = np.frombuffer(rgb, np.uint8)
         rgb = cv2.imdecode(rgb, cv2.IMREAD_COLOR)
+        # Convert RGB to PIL for augmentation
+        rgb_pil = Image.fromarray(cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+        # Apply brightness augmentation is enabled
+        if self.is_train and self.augment_brightness:
+            brightness_transform = transforms.ColorJitter(
+                brightness=self.brightness_factor
+            )
+            rgb_pil = brightness_transform(rgb_pil)
+        # Convert back to np array and then to tensor
+        rgb = np.array(rgb_pil)
+        
         depth = np.frombuffer(depth, np.uint8)
         depth = cv2.imdecode(depth, cv2.IMREAD_COLOR)
 

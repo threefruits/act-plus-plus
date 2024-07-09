@@ -272,9 +272,9 @@ def BatchSampler(batch_size, episode_len_l, sample_weights):
 #     return train_dataloader, val_dataloader, norm_stats, train_dataset.is_sim
 
 def load_data(batch_size_train, batch_size_val, task):
-    demo_dir = f"core/env/expert_demo/{task}"
+    demo_dir = f"/data/home/share/fetch_data/{task}"
     print("loading data...", demo_dir)
-    train_dataset = FetchRobotDataset(demo_dir=demo_dir, is_train=True, k=100, traj_len=360)
+    train_dataset = FetchRobotDataset(demo_dir=demo_dir, is_train=True, k=100, traj_len=360, augment_brightness=False, brightness_factor=0.5)
     val_dataset = FetchRobotDataset(demo_dir=demo_dir, is_train=False, k=100, traj_len=360)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size_train, shuffle=True, pin_memory=True,
                                   num_workers=8, prefetch_factor=2, )

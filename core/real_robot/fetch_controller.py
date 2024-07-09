@@ -281,7 +281,7 @@ class FetchController(FetchStateEnv):
             self.move_back(duration=5)
         robot.plan_to_move_joints(robot.home_joints)
 
-        if task.data in ["open_fridge"]:
+        if task.data in ["open_fridge", "close_fridge"]:
             self.move_back(v=0.1, duration=3.6)
 
         # rotate 360
