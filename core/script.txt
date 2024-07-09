@@ -1,0 +1,100 @@
+1 terminal
+ssh fetch@fetch48.local # password:robotics
+cd rls-robot-ws-proj
+source devel/setup.bash
+#roslaunch anxing_app fetch_control_drivers.launch
+roslaunch anxing_app fetch_control_drivers_icra24.launch
+
+#1st terminal
+#ssh fetch@fetch48.local # password:robotics
+#cd rls-robot-ws-proj
+#source devel/setup.bash
+#roslaunch launch_fetch_drivers fetch_onboard_drivers.launch
+
+2nd terminal
+ssh fetch@fetch48.local # password:robotics
+cd rls-robot-ws-proj
+source devel/setup.bash
+roslaunch siwei_exp_app fetch_image_compressed.launch
+
+3 terminal
+ssh fetch@fetch48.local # password:robotics
+cd rls-robot-ws-proj
+source devel/setup.bash
+cd ~/Documents/TransformerIL2/
+python core/real_robot/fetch_controller.py
+
+4 terminal
+ssh fetch@fetch48.local # password:robotics
+killall -9 python
+
+5 terminal
+rsync -avrP core fetch@fetch48.local:/home/fetch/Documents/TransformerIL2/ --exclude 'core/env/expert_demo'
+
+6 terminal
+cd ~/catkin_py3_ws
+source devel/setup.bash
+set_rosmaster_fetch
+cd -
+python imitate_episodes.py --eval --task_name sim_transfer_cube_scripted --ckpt_dir check_point/check_point_no_stats --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name pickplace_pen --ckpt_dir check_point/pickplace_pen --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+
+7 terminal
+cd ~/catkin_py3_ws
+source devel/setup.bash
+set_rosmaster_fetch
+rosrun rviz rviz -d ~/Documents/fetch.rviz
+
+
+#8 terminal on melodic
+#conda deactivate
+#conda deactivate
+#cd ~/work/rls-robot-ws-proj
+#source devel/setup.bash
+#set_rosmaster_fetch
+
+python imitate_episodes.py --eval --task_name open_fridge --ckpt_dir check_point/open_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name grasp_food_from_fridge --ckpt_dir check_point/grasp_food_from_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placeon_food_counter --ckpt_dir check_point/placeon_food_counter --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name close_fridge --ckpt_dir check_point/close_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name open_microwave --ckpt_dir check_point/open_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name grasp_food_from_table --ckpt_dir check_point/grasp_food_from_table --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placein_microwave --ckpt_dir check_point/placein_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name close_microwave --ckpt_dir check_point/close_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name switchon_microwave --ckpt_dir check_point/switchon_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name open_microwave --ckpt_dir check_point/open_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name grasp_food_from_microwave --ckpt_dir check_point/grasp_food_from_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placeon_food_dinning_table --ckpt_dir check_point/placeon_food_dinning_table --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+
+## fridge
+python imitate_episodes.py --eval --task_name open_fridge --ckpt_dir check_point/open_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name close_fridge --ckpt_dir check_point/close_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+
+## microwave
+python imitate_episodes.py --eval --task_name open_microwave --ckpt_dir check_point/open_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name close_microwave --ckpt_dir check_point/close_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name switchon_microwave --ckpt_dir check_point/switchon_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+
+## grasp and place 1
+python imitate_episodes.py --eval --task_name grasp_food_from_fridge --ckpt_dir check_point/grasp_food_from_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placein_microwave --ckpt_dir check_point/placein_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name grasp_food_from_microwave --ckpt_dir check_point/grasp_food_from_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+
+
+
+## grasp and place 2
+python imitate_episodes.py --eval --task_name grasp_food_from_microwave --ckpt_dir check_point/grasp_food_from_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placein_microwave --ckpt_dir check_point/placein_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+
+
+python imitate_episodes.py --eval --task_name grasp_food_from_fridge --ckpt_dir check_point/grasp_food_from_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placeon_food_counter --ckpt_dir check_point/placeon_food_counter --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name close_fridge --ckpt_dir check_point/close_fridge --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name open_microwave --ckpt_dir check_point/open_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name grasp_food_from_table --ckpt_dir check_point/grasp_food_from_table --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placein_microwave --ckpt_dir check_point/placein_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name close_microwave --ckpt_dir check_point/close_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name switchon_microwave --ckpt_dir check_point/switchon_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name open_microwave --ckpt_dir check_point/open_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name grasp_food_from_microwave --ckpt_dir check_point/grasp_food_from_microwave --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0
+python imitate_episodes.py --eval --task_name placeon_food_dinning_table --ckpt_dir check_point/placeon_food_dinning_table --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 32 --dim_feedforward 3200 --num_epochs 2000 --lr 1e-5 --temporal_agg --seed 0

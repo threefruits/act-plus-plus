@@ -145,3 +145,8 @@ ckpts/
 *.png
 *.npy
 play.ipynb
+
+core/env/
+core/point_cloud_images/
+core/output*
+check_point/

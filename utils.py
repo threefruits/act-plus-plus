@@ -8,6 +8,7 @@ import cv2
 from time import time
 from torch.utils.data import TensorDataset, DataLoader
 import torchvision.transforms as transforms
+from core.fetch_robot_data_loader import FetchRobotDataset
 
 import IPython
 e = IPython.embed
@@ -217,56 +218,70 @@ def BatchSampler(batch_size, episode_len_l, sample_weights):
             batch.append(step_idx)
         yield batch
 
-def load_data(dataset_dir_l, name_filter, camera_names, batch_size_train, batch_size_val, chunk_size, skip_mirrored_data=False, load_pretrain=False, policy_class=None, stats_dir_l=None, sample_weights=None, train_ratio=0.99):
-    if type(dataset_dir_l) == str:
-        dataset_dir_l = [dataset_dir_l]
-    dataset_path_list_list = [find_all_hdf5(dataset_dir, skip_mirrored_data) for dataset_dir in dataset_dir_l]
-    num_episodes_0 = len(dataset_path_list_list[0])
-    dataset_path_list = flatten_list(dataset_path_list_list)
-    dataset_path_list = [n for n in dataset_path_list if name_filter(n)]
-    num_episodes_l = [len(dataset_path_list) for dataset_path_list in dataset_path_list_list]
-    num_episodes_cumsum = np.cumsum(num_episodes_l)
+# def load_data(dataset_dir_l, name_filter, camera_names, batch_size_train, batch_size_val, chunk_size, skip_mirrored_data=False, load_pretrain=False, policy_class=None, stats_dir_l=None, sample_weights=None, train_ratio=0.99):
+#     if type(dataset_dir_l) == str:
+#         dataset_dir_l = [dataset_dir_l]
+#     dataset_path_list_list = [find_all_hdf5(dataset_dir, skip_mirrored_data) for dataset_dir in dataset_dir_l]
+#     num_episodes_0 = len(dataset_path_list_list[0])
+#     dataset_path_list = flatten_list(dataset_path_list_list)
+#     dataset_path_list = [n for n in dataset_path_list if name_filter(n)]
+#     num_episodes_l = [len(dataset_path_list) for dataset_path_list in dataset_path_list_list]
+#     num_episodes_cumsum = np.cumsum(num_episodes_l)
 
-    # obtain train test split on dataset_dir_l[0]
-    shuffled_episode_ids_0 = np.random.permutation(num_episodes_0)
-    train_episode_ids_0 = shuffled_episode_ids_0[:int(train_ratio * num_episodes_0)]
-    val_episode_ids_0 = shuffled_episode_ids_0[int(train_ratio * num_episodes_0):]
-    train_episode_ids_l = [train_episode_ids_0] + [np.arange(num_episodes) + num_episodes_cumsum[idx] for idx, num_episodes in enumerate(num_episodes_l[1:])]
-    val_episode_ids_l = [val_episode_ids_0]
-    train_episode_ids = np.concatenate(train_episode_ids_l)
-    val_episode_ids = np.concatenate(val_episode_ids_l)
-    print(f'\n\nData from: {dataset_dir_l}\n- Train on {[len(x) for x in train_episode_ids_l]} episodes\n- Test on {[len(x) for x in val_episode_ids_l]} episodes\n\n')
+#     # obtain train test split on dataset_dir_l[0]
+#     shuffled_episode_ids_0 = np.random.permutation(num_episodes_0)
+#     train_episode_ids_0 = shuffled_episode_ids_0[:int(train_ratio * num_episodes_0)]
+#     val_episode_ids_0 = shuffled_episode_ids_0[int(train_ratio * num_episodes_0):]
+#     train_episode_ids_l = [train_episode_ids_0] + [np.arange(num_episodes) + num_episodes_cumsum[idx] for idx, num_episodes in enumerate(num_episodes_l[1:])]
+#     val_episode_ids_l = [val_episode_ids_0]
+#     train_episode_ids = np.concatenate(train_episode_ids_l)
+#     val_episode_ids = np.concatenate(val_episode_ids_l)
+#     print(f'\n\nData from: {dataset_dir_l}\n- Train on {[len(x) for x in train_episode_ids_l]} episodes\n- Test on {[len(x) for x in val_episode_ids_l]} episodes\n\n')
 
-    # obtain normalization stats for qpos and action
-    # if load_pretrain:
-    #     with open(os.path.join('/home/zfu/interbotix_ws/src/act/ckpts/pretrain_all', 'dataset_stats.pkl'), 'rb') as f:
-    #         norm_stats = pickle.load(f)
-    #     print('Loaded pretrain dataset stats')
-    _, all_episode_len = get_norm_stats(dataset_path_list)
-    train_episode_len_l = [[all_episode_len[i] for i in train_episode_ids] for train_episode_ids in train_episode_ids_l]
-    val_episode_len_l = [[all_episode_len[i] for i in val_episode_ids] for val_episode_ids in val_episode_ids_l]
-    train_episode_len = flatten_list(train_episode_len_l)
-    val_episode_len = flatten_list(val_episode_len_l)
-    if stats_dir_l is None:
-        stats_dir_l = dataset_dir_l
-    elif type(stats_dir_l) == str:
-        stats_dir_l = [stats_dir_l]
-    norm_stats, _ = get_norm_stats(flatten_list([find_all_hdf5(stats_dir, skip_mirrored_data) for stats_dir in stats_dir_l]))
-    print(f'Norm stats from: {stats_dir_l}')
+#     # obtain normalization stats for qpos and action
+#     # if load_pretrain:
+#     #     with open(os.path.join('/home/zfu/interbotix_ws/src/act/ckpts/pretrain_all', 'dataset_stats.pkl'), 'rb') as f:
+#     #         norm_stats = pickle.load(f)
+#     #     print('Loaded pretrain dataset stats')
+#     _, all_episode_len = get_norm_stats(dataset_path_list)
+#     train_episode_len_l = [[all_episode_len[i] for i in train_episode_ids] for train_episode_ids in train_episode_ids_l]
+#     val_episode_len_l = [[all_episode_len[i] for i in val_episode_ids] for val_episode_ids in val_episode_ids_l]
+#     train_episode_len = flatten_list(train_episode_len_l)
+#     val_episode_len = flatten_list(val_episode_len_l)
+#     if stats_dir_l is None:
+#         stats_dir_l = dataset_dir_l
+#     elif type(stats_dir_l) == str:
+#         stats_dir_l = [stats_dir_l]
+#     norm_stats, _ = get_norm_stats(flatten_list([find_all_hdf5(stats_dir, skip_mirrored_data) for stats_dir in stats_dir_l]))
+#     print(f'Norm stats from: {stats_dir_l}')
 
-    batch_sampler_train = BatchSampler(batch_size_train, train_episode_len_l, sample_weights)
-    batch_sampler_val = BatchSampler(batch_size_val, val_episode_len_l, None)
+#     batch_sampler_train = BatchSampler(batch_size_train, train_episode_len_l, sample_weights)
+#     batch_sampler_val = BatchSampler(batch_size_val, val_episode_len_l, None)
 
-    # print(f'train_episode_len: {train_episode_len}, val_episode_len: {val_episode_len}, train_episode_ids: {train_episode_ids}, val_episode_ids: {val_episode_ids}')
+#     # print(f'train_episode_len: {train_episode_len}, val_episode_len: {val_episode_len}, train_episode_ids: {train_episode_ids}, val_episode_ids: {val_episode_ids}')
 
-    # construct dataset and dataloader
-    train_dataset = EpisodicDataset(dataset_path_list, camera_names, norm_stats, train_episode_ids, train_episode_len, chunk_size, policy_class)
-    val_dataset = EpisodicDataset(dataset_path_list, camera_names, norm_stats, val_episode_ids, val_episode_len, chunk_size, policy_class)
-    train_num_workers = (8 if os.getlogin() == 'zfu' else 16) if train_dataset.augment_images else 2
-    val_num_workers = 8 if train_dataset.augment_images else 2
-    print(f'Augment images: {train_dataset.augment_images}, train_num_workers: {train_num_workers}, val_num_workers: {val_num_workers}')
-    train_dataloader = DataLoader(train_dataset, batch_sampler=batch_sampler_train, pin_memory=True, num_workers=train_num_workers, prefetch_factor=2)
-    val_dataloader = DataLoader(val_dataset, batch_sampler=batch_sampler_val, pin_memory=True, num_workers=val_num_workers, prefetch_factor=2)
+#     # construct dataset and dataloader
+#     train_dataset = EpisodicDataset(dataset_path_list, camera_names, norm_stats, train_episode_ids, train_episode_len, chunk_size, policy_class)
+#     val_dataset = EpisodicDataset(dataset_path_list, camera_names, norm_stats, val_episode_ids, val_episode_len, chunk_size, policy_class)
+#     train_num_workers = (8 if os.getlogin() == 'zfu' else 16) if train_dataset.augment_images else 2
+#     val_num_workers = 8 if train_dataset.augment_images else 2
+#     print(f'Augment images: {train_dataset.augment_images}, train_num_workers: {train_num_workers}, val_num_workers: {val_num_workers}')
+#     train_dataloader = DataLoader(train_dataset, batch_sampler=batch_sampler_train, pin_memory=True, num_workers=train_num_workers, prefetch_factor=2)
+#     val_dataloader = DataLoader(val_dataset, batch_sampler=batch_sampler_val, pin_memory=True, num_workers=val_num_workers, prefetch_factor=2)
+
+#     return train_dataloader, val_dataloader, norm_stats, train_dataset.is_sim
+
+def load_data(batch_size_train, batch_size_val, task):
+    demo_dir = f"core/env/expert_demo/{task}"
+    print("loading data...", demo_dir)
+    train_dataset = FetchRobotDataset(demo_dir=demo_dir, is_train=True, k=100, traj_len=360)
+    val_dataset = FetchRobotDataset(demo_dir=demo_dir, is_train=False, k=100, traj_len=360)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size_train, shuffle=True, pin_memory=True,
+                                  num_workers=8, prefetch_factor=2, )
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size_val, shuffle=True, pin_memory=True,
+                                num_workers=8, prefetch_factor=2)
+
+    norm_stats = train_dataset.get_norm_stats()
 
     return train_dataloader, val_dataloader, norm_stats, train_dataset.is_sim
 

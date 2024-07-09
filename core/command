@@ -1,0 +1,75 @@
+If you are using conda to manage Python 3 environments, here is how you can modify the process of setting up ROS Melodic:
+
+1. Create a new conda environment with Python 3. You can do this by running the following command:
+
+```
+conda create --name ros_py3_env python=3.6
+```
+
+Replace `ros_py3_env` with the desired name for your conda environment.
+
+2. Activate the newly created conda environment:
+
+```
+conda activate ros_py3_env
+```
+
+3. Install the Python 3 packages required for ROS:
+
+```
+pip install catkin_tools numpy empy
+```
+
+4. Create a new Catkin workspace specifically for Python 3 projects:
+
+```
+mkdir -p ~/catkin_py3_ws/src
+cd ~/catkin_py3_ws/
+```
+
+5. Configure the Catkin workspace to use Python 3 from the conda environment:
+
+```
+catkin config -DPYTHON_EXECUTABLE=$(which python) -DPYTHON_INCLUDE_DIR=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])") -DPYTHON_LIBRARY=$(python -c "from sysconfig import get_paths; import os; print(os.path.join(get_paths()['stdlib'], 'config-', '.'.join(map(str, sys.version_info[:2])), 'libpython' + '.'.join(map(str, sys.version_info[:2])) + 'm.so'))")
+```
+
+catkin build --cmake-args \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPYTHON_EXECUTABLE=/home/summer/anaconda3/envs/TransIL/bin/python \
+            -DPYTHON_INCLUDE_DIR=/home/summer/anaconda3/include/python3.8 \
+            -DPYTHON_LIBRARY=/home/summer/anaconda3/envs/TransIL/lib/libpython3.8.so
+
+-DPYTHON_EXECUTABLE=/home/summer/anaconda3/envs/TransIL/bin/python
+-DPYTHON_INCLUDE_DIR=/home/summer/anaconda3/include/python3.8
+-DPYTHON_LIBRARY=/home/summer/anaconda3/envs/TransIL/lib/libpython3.8.so
+6. Initialize the Catkin workspace:
+
+```
+catkin init
+```
+
+7. Source the ROS environment:
+
+```
+source /opt/ros/melodic/setup.bash
+```
+
+8. Install your required packages. You can do this by adding the packages to the `src` folder in the catkin workspace, and then install the required Python dependencies using:
+
+```
+rosdep install --from-paths src --ignore-src -r -y
+```
+
+9. Build the packages:
+
+```
+catkin build
+```
+
+10. Source the workspace to use the built packages:
+
+```
+source devel/setup.bash
+```
+
+Now you can run your Python 3 scripts with ROS in this workspace using the conda environment. Note that switching between Python 2 and 3 might cause issues with certain ROS packages, so it would be better to keep separate workspaces for each Python version.

@@ -27,6 +27,8 @@ from sim_env import BOX_POSE
 import IPython
 e = IPython.embed
 
+
+
 def get_auto_index(dataset_dir):
     max_idx = 1000
     for i in range(max_idx+1):
@@ -52,6 +54,8 @@ def main(args):
 
     # get task parameters
     is_sim = task_name[:4] == 'sim_'
+    is_sim = True
+
     if is_sim or task_name == 'all':
         from constants import SIM_TASK_CONFIGS
         task_config = SIM_TASK_CONFIGS[task_name]
@@ -68,7 +72,7 @@ def main(args):
     name_filter = task_config.get('name_filter', lambda n: True)
 
     # fixed parameters
-    state_dim = 14
+    state_dim = 20
     lr_backbone = 1e-5
     backbone = 'resnet18'
     if policy_class == 'ACT':
@@ -89,14 +93,14 @@ def main(args):
                          'vq': args['use_vq'],
                          'vq_class': args['vq_class'],
                          'vq_dim': args['vq_dim'],
-                         'action_dim': 16,
+                         'action_dim': 20,
                          'no_encoder': args['no_encoder'],
                          }
     elif policy_class == 'Diffusion':
 
         policy_config = {'lr': args['lr'],
                          'camera_names': camera_names,
-                         'action_dim': 16,
+                         'action_dim': 20,
                          'observation_horizon': 1,
                          'action_horizon': 8,
                          'prediction_horizon': args['chunk_size'],
@@ -145,7 +149,7 @@ def main(args):
     config_path = os.path.join(ckpt_dir, 'config.pkl')
     expr_name = ckpt_dir.split('/')[-1]
     if not is_eval:
-        wandb.init(project="mobile-aloha2", reinit=True, entity="mobile-aloha2", name=expr_name)
+        wandb.init(project="IL", reinit=True, name=expr_name)
         wandb.config.update(config)
     with open(config_path, 'wb') as f:
         pickle.dump(config, f)
@@ -162,8 +166,8 @@ def main(args):
         print()
         exit()
 
-    train_dataloader, val_dataloader, stats, _ = load_data(dataset_dir, name_filter, camera_names, batch_size_train, batch_size_val, args['chunk_size'], args['skip_mirrored_data'], config['load_pretrain'], policy_class, stats_dir_l=stats_dir, sample_weights=sample_weights, train_ratio=train_ratio)
-
+    # train_dataloader, val_dataloader, stats, _ = load_data(dataset_dir, name_filter, camera_names, batch_size_train, batch_size_val, args['chunk_size'], args['skip_mirrored_data'], config['load_pretrain'], policy_class, stats_dir_l=stats_dir, sample_weights=sample_weights, train_ratio=train_ratio)
+    train_dataloader, val_dataloader, stats, _ = load_data(batch_size_train, batch_size_val, config['task_name'])
     # save dataset stats
     stats_path = os.path.join(ckpt_dir, f'dataset_stats.pkl')
     with open(stats_path, 'wb') as f:
@@ -587,14 +591,14 @@ def train_bc(train_dataloader, val_dataloader, config):
                 summary_string += f'{k}: {v.item():.3f} '
             print(summary_string)
                 
-        # evaluation
-        if (step > 0) and (step % eval_every == 0):
-            # first save then eval
-            ckpt_name = f'policy_step_{step}_seed_{seed}.ckpt'
-            ckpt_path = os.path.join(ckpt_dir, ckpt_name)
-            torch.save(policy.serialize(), ckpt_path)
-            success, _ = eval_bc(config, ckpt_name, save_episode=True, num_rollouts=10)
-            wandb.log({'success': success}, step=step)
+        # # evaluation
+        # if (step > 0) and (step % eval_every == 0):
+        #     # first save then eval
+        #     ckpt_name = f'policy_step_{step}_seed_{seed}.ckpt'
+        #     ckpt_path = os.path.join(ckpt_dir, ckpt_name)
+        #     torch.save(policy.serialize(), ckpt_path)
+        #     success, _ = eval_bc(config, ckpt_name, save_episode=True, num_rollouts=10)
+        #     wandb.log({'success': success}, step=step)
 
         # training
         policy.train()
@@ -663,4 +667,5 @@ if __name__ == '__main__':
     parser.add_argument('--vq_dim', action='store', type=int, help='vq_dim')
     parser.add_argument('--no_encoder', action='store_true')
     
+
     main(vars(parser.parse_args()))
