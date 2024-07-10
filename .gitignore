@@ -152,3 +152,4 @@ core/output*
 check_point/
 scripts
 result*
+wandb
