@@ -31,6 +31,13 @@ SIM_TASK_CONFIGS = {
         'camera_names': ['top']
     },
     
+    'open_fridge_upper': {
+        'dataset_dir': DATA_DIR + '/sim_transfer_cube_scripted',
+        'num_episodes': 50,
+        'episode_len': 400,
+        'camera_names': ['top']
+    },
+    
     'grasp_food_from_fridge': {
         'dataset_dir': DATA_DIR + '/sim_transfer_cube_scripted',
         'num_episodes': 50,
