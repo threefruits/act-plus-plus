@@ -17,10 +17,10 @@ from geometry_msgs.msg import Pose, Twist, Vector3
 
 from scipy.spatial.transform import Rotation as R
 
-from core.real_robot.fetch_state import FetchStateEnv, prepare_conf
-from core.real_robot.ranged_ik.robot import Robot
+from act_plus_plus.real_robot.fetch_state import FetchStateEnv, prepare_conf
+from act_plus_plus.real_robot.ranged_ik.robot import Robot
 # from core.real_robot.vr_controller import VRController
-from core.real_robot.vr_controller_remote import VRController
+from act_plus_plus.real_robot.vr_controller_remote import VRController
 
 my_path = os.path.dirname(os.path.abspath(__file__))
 

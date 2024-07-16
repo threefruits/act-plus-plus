@@ -8,7 +8,7 @@ import cv2
 from time import time
 from torch.utils.data import TensorDataset, DataLoader
 import torchvision.transforms as transforms
-from core.fetch_robot_data_loader import FetchRobotDataset
+from act_plus_plus.fetch_robot_data_loader import FetchRobotDataset
 
 import IPython
 e = IPython.embed
