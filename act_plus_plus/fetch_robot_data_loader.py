@@ -11,9 +11,10 @@ class FetchRobotDataset(Dataset):
     cache = {}
     file_cache = {}
 
-    def __init__(self, demo_dir, traj_len=1, is_train=True, use_ori_pil_img=False):
+    def __init__(self, demo_dir, traj_len=1, is_train=True, use_ori_pil_img=False, use_data_aug=False):
         super(FetchRobotDataset, self).__init__()
         self.use_ori_pil_img = use_ori_pil_img
+        self.use_data_aug = use_data_aug
         self.demo_dir = demo_dir
         self.traj_len = traj_len
         self.demo_files = glob.glob(f"{demo_dir}/episode_*")
@@ -110,6 +111,8 @@ class FetchRobotDataset(Dataset):
                 FetchRobotDataset.cache[f"episode_{file_idx}/depth_{step_idx}.jpg"] = depth
             rgb = np.frombuffer(rgb, np.uint8)
             rgb = cv2.imdecode(rgb, cv2.IMREAD_COLOR)
+            if self.use_data_aug:
+                rgb = self.data_augmentation(rgb)
             depth = np.frombuffer(depth, np.uint8)
             depth = cv2.imdecode(depth, cv2.IMREAD_COLOR)
 
